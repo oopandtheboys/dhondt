@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace D_Hondt
+namespace CMP1903M
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var a = new Dhondt("Assessment1Data.txt");
+            Console.WriteLine($"{ a.TotalVotes } { a.Constituency } { a.RoundCount }");
         }
 
         private static Dictionary<string, int> CalculateMethod(Dictionary<string, int> parties, int rounds)
