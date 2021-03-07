@@ -15,10 +15,10 @@ namespace CMP1903M
         public Dhondt(string FilePath)
         {
             _FilePath = FilePath;
-            _ReadDataset();
+            _ImportDataset();
         }
 
-        private void _ReadDataset()
+        private void _ImportDataset()
         {
             string[] dataset = System.IO.File.ReadAllLines(_FilePath);
 
