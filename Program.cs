@@ -8,8 +8,16 @@ namespace CMP1903M
     {
         static void Main(string[] args)
         {
-            var a = new Dhondt("Assessment1Data.txt");
-            Console.WriteLine($"{ a.TotalVotes } { a.Constituency } { a.RoundCount }");
+            // Proof of Concept
+            var exampleObject = new Dhondt();
+            exampleObject.ImportDataSet("Assessment1Data.txt");
+            Console.WriteLine($"{ exampleObject.TotalVotes } { exampleObject.Constituency } { exampleObject.Rounds }");
+
+            foreach (var party in exampleObject.Parties)
+            {
+                Console.WriteLine(party.Name);
+                Console.WriteLine(party.Votes);
+            }
         }
 
         private static Dictionary<string, int> CalculateMethod(Dictionary<string, int> parties, int rounds)

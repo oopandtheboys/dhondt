@@ -1,38 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mime;
 
 namespace CMP1903M
 {
     class Dhondt
     {
-        private string _FilePath;
-        public string Constituency { get; private set; }
-        public int RoundCount { get; private set; }
-        public int TotalVotes { get; private set; }
-        public Dictionary<string, int> PartyVotes { get; private set; } = new Dictionary<string, int>();
-        public Dictionary<string, List<string>> PartyMembers { get; private set; } = new Dictionary<string, List<string>>();
+        public string Constituency;
+        public int Rounds;
+        public int TotalVotes;
+        public List<Party> Parties = new List<Party>();
 
-        public Dhondt(string FilePath)
+        public void ImportDataSet(string path)
         {
-            _FilePath = FilePath;
-            _ImportDataset();
-        }
+            string[] dataSet = System.IO.File.ReadAllLines(path);
 
-        private void _ImportDataset()
-        {
-            string[] dataset = System.IO.File.ReadAllLines(_FilePath);
-
-            if (dataset.Length < 4)
-                Console.WriteLine("Invalid dataset provided.");
-
-            Constituency = dataset[0].Substring(1);
-            RoundCount = Int32.Parse(dataset[1]);
-            TotalVotes = Int32.Parse(dataset[2]);
-
-            for (var i = 3; i < dataset.Length; i++)
+            if (dataSet.Length < 4)
             {
-                string[] party = dataset[i].Split(",");
-                PartyVotes.Add(party[0], Int32.Parse(party[1]));
+                Console.WriteLine("Invalid dataset provided.");
+                return;
+            }
+
+            Constituency = dataSet[0].TrimStart('#');
+            Rounds = Int32.Parse(dataSet[1]);
+            TotalVotes = Int32.Parse(dataSet[2]);
+
+            for (var i = 3; i < dataSet.Length; i++)
+            {
+                List<string> partyData = dataSet[i]
+                    .TrimEnd(';')
+                    .Split(",")
+                    .ToList();
+                
+                Parties.Add(new Party(partyData[0],
+                    Int32.Parse(partyData[1]),
+                    partyData.GetRange(2, partyData.Count - 2)));
             }
         }
     }
