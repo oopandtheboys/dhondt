@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Net.Mime;
 
 namespace CMP1903M
@@ -14,7 +15,7 @@ namespace CMP1903M
 
         public void ImportDataSet(string path)
         {
-            string[] dataSet = System.IO.File.ReadAllLines(path);
+            string[] dataSet = File.ReadAllLines(path);
 
             if (dataSet.Length < 4)
             {
@@ -23,8 +24,8 @@ namespace CMP1903M
             }
 
             Constituency = dataSet[0].TrimStart('#');
-            Rounds = Int32.Parse(dataSet[1]);
-            TotalVotes = Int32.Parse(dataSet[2]);
+            Rounds = int.Parse(dataSet[1]);
+            TotalVotes = int.Parse(dataSet[2]);
 
             for (var i = 3; i < dataSet.Length; i++)
             {
@@ -34,7 +35,7 @@ namespace CMP1903M
                     .ToList();
                 
                 Parties.Add(new Party(partyData[0],
-                    Int32.Parse(partyData[1]),
+                    int.Parse(partyData[1]),
                     partyData.GetRange(2, partyData.Count - 2)));
             }
         }
