@@ -10,12 +10,14 @@ namespace CMP1903M
         public string Constituency;
         public int Rounds;
         public int TotalVotes;
-        public List<Party> Parties = new List<Party>();
+        public List<Party> Parties = new();
 
         public void ImportDataSet(string path)
         {
+            // Takes the dataset
             string[] dataSet = File.ReadAllLines(path);
 
+            // Verifies if the dataset is valid
             if (dataSet.Length < 4)
             {
                 Console.WriteLine("Invalid dataset provided.");
@@ -46,7 +48,7 @@ namespace CMP1903M
             return ordered;
         }
 
-        public Dictionary<string, int> Calculate(Dictionary<string, int> parties, int rounds)
+        public List<List<string>> Calculate(Dictionary<string, int> parties, int rounds)
         {
             // Parties has an int component and a string component.
             Dictionary<string, int> roundsWon = new Dictionary<string, int>();
@@ -68,7 +70,32 @@ namespace CMP1903M
                 parties[parties.ElementAt(parties.Count - 1).Key] /= 2;
             }
 
-            return roundsWon;
+            return GenerateReturn(parties, Parties);
+        }
+
+        // Returns a list, index 0 of the list is the party name
+        private List<List<string>> GenerateReturn(Dictionary<string, int> parties, List<Party> assignemntData)
+        {
+            List<List<string>> toReturn = new();
+
+            //Add the names to the output list
+            for (int x = 0; x < parties.Length; x++)
+            {
+                toReturn.Add(List<string>);
+                toReturn[x].Add(assignemntData[x].Name)
+            }
+
+            // Add constituencies to output list
+
+            for (int y = 0; y < parties.Length; y++)
+            {
+                for (int i = 0; i < parties[y]; i++)
+                {
+                    toReturn[y].Add(assignemntData[y].Members[i])
+                }
+            }
+
+            return toReturn
         }
     }
 }
