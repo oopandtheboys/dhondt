@@ -7,27 +7,41 @@ namespace CMP1903M
 {
     class Dhondt
     {
-        public string Constituency;
-        public int Rounds;
-        public int TotalVotes;
-        public List<Party> Parties = new();
+        private int _rounds;
+        private int _totalVotes;
+        private Dictionary<string, Party> _parties = new Dictionary<string, Party>();
+        private string _path;
 
-        public void ImportDataSet(string path)
+        // Constructor to enable flexibility if user doesn't wish to import from file.
+        public Dhondt(int rounds, int total_votes, Dictionary<string, Party> parties)
         {
-            // Takes the dataset
+            _rounds = rounds;
+            _totalVotes = total_votes;
+            _parties = parties;
+        }
+
+        public Dhondt(string path)
+        {
+            _path = path;
+            _ImportDataSetFromFile(_path);
+        }
+
+        // This method handles the import of vote data for D'hondt Method processing.
+        private void _ImportDataSetFromFile(string path)
+        {
             string[] dataSet = File.ReadAllLines(path);
 
-            // Verifies if the dataset is valid
+            // Basic validation check to ensure dataset is using the correct format.
             if (dataSet.Length < 4)
             {
                 Console.WriteLine("Invalid dataset provided.");
                 return;
             }
 
-            Constituency = dataSet[0].TrimStart('#');
-            Rounds = int.Parse(dataSet[1]);
-            TotalVotes = int.Parse(dataSet[2]);
+            _rounds = int.Parse(dataSet[1]);
+            _totalVotes = int.Parse(dataSet[2]);
 
+            // Iterates over the lines containing data for each party, tidies up the strings and adds them to an object within a dictionary.
             for (var i = 3; i < dataSet.Length; i++)
             {
                 List<string> partyData = dataSet[i]
@@ -35,67 +49,75 @@ namespace CMP1903M
                     .Split(",")
                     .ToList();
                 
-                Parties.Add(new Party(partyData[0],
+                _parties.Add(partyData[0], new Party(partyData[0],
                     int.Parse(partyData[1]),
                     partyData.GetRange(2, partyData.Count - 2)));
             }
         }
 
-        private static Dictionary<string, int> _DictSort(Dictionary<string, int> toSort)
+        // This method handles the import of existing calculated results so the application can be tested for accuracy.
+        public static Dictionary<string, List<string>> ImportResultSetFromFile(string path)
         {
-            // Sort the dictionary to be returned
-            var ordered = toSort.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-            return ordered;
+            string[] resultSet = File.ReadAllLines(path);
+
+            var parties = new Dictionary<string, List<string>>();
+
+            // Iterates over the lines containing data for each party, tidies up the strings and adds them to an object within a dictionary.
+            for (var i = 1; i < resultSet.Length; i++)
+            {
+                List<string> partyData = resultSet[i]
+                    .TrimEnd(';')
+                    .Split(",")
+                    .ToList();
+
+                parties.Add(partyData[0], partyData.GetRange(1, partyData.Count - 1));
+            }
+
+            return parties;
         }
 
-        public List<List<string>> Calculate(Dictionary<string, int> parties, int rounds)
+        // This method calculates the D'hondt Method.
+        public Dictionary<string, List<string>> Calculate()
         {
-            // Parties has an int component and a string component.
-            Dictionary<string, int> roundsWon = new Dictionary<string, int>();
+            var elected = new Dictionary<string, List<string>>();
 
-            // Create a dict for parties vs rounds won
-            for (int i = 0; i < parties.Count; i++)
+            // Iterate for as many rounds as specified through the input.
+            for (int i = 0; i < _rounds; i++)
             {
-                roundsWon.Add(parties.ElementAt(i).Key, 0);
+                // Variables used to keep track of the highest quotient value and the respective party the value was generated from.
+                int quotient = 0;
+                string party_name = "";
+                
+                foreach (var party in _parties)
+                    if (quotient < party.Value.Votes / (i + 1))
+                    {
+                        quotient = party.Value.Votes / (i + 1);
+                        party_name = party.Value.Name;
+
+                    }
+
+                // Once the round winner has been identified, update their new vote count and seats.
+                _parties[party_name].Votes = quotient;
+                _parties[party_name].Seats++;
             }
 
-            // Process the D'Hondt method
-            for (int i = 0; i < rounds; i++)
-            {
-                // Sort the dictionary
-                parties = _DictSort(parties);
-                // Increment the winner by one.
-                roundsWon[parties.ElementAt(parties.Count - 1).Key]++;
-                // Half the winner
-                parties[parties.ElementAt(parties.Count - 1).Key] /= 2;
-            }
+            // Assemble a dictionary containing party name and newly elected members to return.
+            foreach (var party in _parties)
+                if (party.Value.Seats > 0)
+                    elected.Add(party.Value.Name, party.Value.Members.GetRange(0, party.Value.Seats));
 
-            return GenerateReturn(parties, Parties);
+            return elected;
         }
 
-        // Returns a list, index 0 of the list is the party name
-        private List<List<string>> GenerateReturn(Dictionary<string, int> parties, List<Party> assignemntData)
+        // This method is used to print the results of a D'Hondt Method to console.
+        public void PrintResults()
         {
-            List<List<string>> toReturn = new();
-
-            //Add the names to the output list
-            for (int x = 0; x < parties.Length; x++)
-            {
-                toReturn.Add(List<string>);
-                toReturn[x].Add(assignemntData[x].Name)
-            }
-
-            // Add constituencies to output list
-
-            for (int y = 0; y < parties.Length; y++)
-            {
-                for (int i = 0; i < parties[y]; i++)
-                {
-                    toReturn[y].Add(assignemntData[y].Members[i])
-                }
-            }
-
-            return toReturn
+            Console.WriteLine("=========================");
+            Console.WriteLine($"Total Votes: {_totalVotes}\n");
+            foreach (var party in _parties)
+                if (party.Value.Seats > 0)
+                    Console.WriteLine($"{party.Value.Name} - {String.Join(',', party.Value.Members.GetRange(0, party.Value.Seats))}");
+            Console.WriteLine("=========================");
         }
     }
 }

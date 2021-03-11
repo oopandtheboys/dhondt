@@ -6,16 +6,17 @@ namespace CMP1903M
     {
         static void Main(string[] args)
         {
-            // Proof of Concept
-            var exampleObject = new Dhondt();
-            exampleObject.ImportDataSet("Assessment1Data.txt");
-            Console.WriteLine($"{exampleObject.TotalVotes} {exampleObject.Constituency} {exampleObject.Rounds}");
+            // Create instance.
+            var dhondtMethod = new Dhondt(@"..\..\..\sample_sets\Assessment1Data.txt");
+            
+            // Calculate D'Hondt using the above dataset file imported through the constructor.
+            var calculateMethod = dhondtMethod.Calculate();
 
-            foreach (var party in exampleObject.Parties)
-            {
-                Console.WriteLine(party.Name);
-                Console.WriteLine(party.Votes);
-            }
+            // Print the results of a D'Hondt calculation to console.
+            dhondtMethod.PrintResults();
+
+            // Import a result set from file.
+            var existingResultSet = Dhondt.ImportResultSetFromFile(@"..\..\..\sample_sets\Assessment1TestResults.txt");
         }
     }
 }
